@@ -1,0 +1,13 @@
+#include <iostream>
+
+volatile float x = 1.0f;
+
+int main() {
+    float y = x / 3.0f;
+    if (y * 3.0f != x) {
+        std::cout << "Unexpected result due to floating-point optimizations!\n";
+    } else {
+        std::cout << "As expected!\n";
+    }
+    return 0;
+}
