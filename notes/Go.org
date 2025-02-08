@@ -1,0 +1,370 @@
+#+STARTUP: overview
+#+TITLE: Golang
+#+AUTHOR: Chao Ma
+
+
+* existing notes
+1.  `go test` automatically recompiles each package being tested; go vet the source files; — fit for unit testing
+    
+2.  `go test` searches for files *_test.go
+    
+3.  `go test` searches for test functions (`TestXxx(t *testing.T) {}` `BenchmarkXxx(b *testing.B){}`)
+    
+4.  `go test` will compile a test binary (which is different from deliverable binary?)
+    
+5.  `go test` has local directory mode (`go test`, will run all tests under current dir without cache); and list mode (`go test {{dirName}}`, will run targeted package and **cache the result** btw runs)
+    
+6.  gogo proto vs protoc (protobuf compiler)
+    
+7.  protoc (from protobuf to syntax tree)
+    
+8.  module > package > file; package to dir (one : one, with *_test as an exception)
+    
+9.  ginkgo defaults to generate *_test.go files in a *_test package to encourage you to test a package using its external behaviors rather than internals
+    
+10.  dot import allows imported tokens to be used without a prefix
+    
+11.  `go mod tidy` can add missing and remove unused modules
+    
+12.  ginkgo offers nodes (containers) to fit in testing logic, e.g `Describe("some text", func() {})`
+    
+13.  ginkgo nodes are categorized into subject node (node contains actual tests, e.g `It("should be", func() {})`) and setup node (e.g BeforeEach), container nodes (e.g Describe, Context etc)
+    
+14.  instead of using classes, ginkgo uses closures to share states between related tests
+    
+15.  ginkgo tests == ‘spec’s, one spec has exactly one subject node
+    
+16.  assertions can be made in both setup node & subject node but **not** container node
+    
+17.  specs can be run in parallel
+    
+18.  container nodes are identical (When, Describe, Context) while help the spec narrative flow
+    
+19.  subject nodes can have multiple assertions in it
+    
+20.  ginkgo suite run: a. construct spec tree (run container node but not setup/subject nodes, construct spec tree with setup/subject nodes); b. run
+    
+21.  declare in containers node, initialize in setup node
+    
+22.  ginkgo have deferred func to do cleanups and move cleanup code closer to initialization code
+    
+23.  fast fail can not be disabled, if a spec(test) failed (either failed thru Gomega or direct invocation of Fail in ginkgo, a panic will occur), subsequence code in the spec will not be executed, but cleanup code (AfterEach etc) will be ran. — This is if the panic is caused in main thread other than go routines, if in go routines, we need to explicitly catch (`defer GinkgoRecover()`) the panic so that the suite wouldn’t be halted
+    
+24.  tee is a linux command to write stdin into multiple output (stdout, files etc)
+    
+25.  `By("", func(){})` can group assertions under a same spec
+    
+26.  specs are independent, since ginkgo constructs the spec tree (and flatten it into a list), filtering, sorting, randomization can be done, and also specs can be distributed to multiple workers
+    
+27.  ginkgo defaults to randomize specs only on the top level container, but can be modified to run all specs in random order by `ginkgo --randomize-all` , and randomization seed is taken from timestamp
+    
+28.  ginkgo parallelization will run specs in different processes (completely separately even when they share closures)
+    
+29.  ginkgo parallelization are implemented as follows, several copies of the testing binary will be executed in different processes, those processes will communicate (run phase) thru ginkgo CLI (served as a server) about status
+    
+30.  ginkgo spec can get the # of the process it is running on by calling `GinkgoParallelProcess()`, so that the spec can access the correct shard based on this #
+    
+31.  ginkgo can avoid parallelizing certain specs if they are marked with serial decorator and they would be never run with other specs in parallel. Under the hood it is implemented using process #1 which will wait for all other processes to finish before it runs the serial spec
+    
+32.  process #1 also will be used in SycronizedBefore / SynchronizedAfter to do shared work for all processes, e.g spin up DB and pass DB address to all processes (self included) to build DB client
+    
+33.  container node can be decorated with ordered decorator
+    
+34.  deferCleanup() is context aware, so it can replace AfterEach, AfterAll, SynchronizedAfter etc
+    
+35.  OncePerOrdered decorator offers ability to run preparation/cleanup once for all specs within an ordered container while maintain original behavior for other specs (once per spec), good for situations when have ordered/unordered containers together
+    
+36.  spec failure is handled differently in ordered / unordered containers, in ordered, if a spec failed, subsequent ones will be skipped (if not marked as fast failing)
+    
+37.  specs can be marked as pending etc
+    
+38.  specs can be skipped using the skip function
+    
+39.  more structurally, specs can be tagged with label decorator and filtered based upon it; ginkgo provides a DSL to query (filter) on complex conditions, even regex
+    
+40.  ginkgo provides filters based on source code locations, e.g some files might be skipped, even can filter on specs within a file using line range
+    
+41.  also provides filtering on descriptions (besides labels)
+    
+42.  also provides utilities to debug randomly failed tests, e.g repeat a test until it fails
+    
+43.  suites will be run in sequence, but compiled in parallel
+    
+44.  GOROOT - your go sdk; GOPATH - root of your workspace;
+    
+45.  after 111; go project can reside outside GOPATH;
+    
+46.  a module is a dir with a `go.mod` file in it, the file defines its import path and dependencies
+    
+47.  `go mod init modname` to init a mod
+    
+48.  `go build` will create a binary
+    
+49.  `go run` will create binary, run and destroy the binary
+    
+50.  go package name could be different from dir name; in this case, if other modules import this package, it will use the dir (module + dir); while when refer to tokens, you need package name as prefix
+    
+51.  `strings.Join(strs []string, deliminator string)` to join a string slice efficiently
+    
+52.  `os.Args` is a `string[]` preserves system input
+    
+53.  `range` is a key word in go; while a procedure in python
+    
+54.  if var is defined in func, its scope is func; if defined out of func in a file, it’s available within package with all lowercase name; available outside of package with capitalized name
+    
+55.  package name is all lowercase
+    
+56.  `go` asks to use short names; and camel case
+    
+57.  declarations: `var const type func`
+    
+58.  declaration order doesn’t matter at file / package level, but matters in func
+    
+59.  go code is organized in packages rather than files; all files within a same package share the scope (acting as one single file)
+    
+60.  `var v int = 1` int or “= 1” can be avoided
+    
+61.  zero value for `interface / reference` is `nil`; for `string` is `empty string`; for numbers is `0`; array (not slice) / struct or other aggregational types is every element in it is their empty value
+    
+62.  `empty value initialization` is happening every where, not like Java only in class scope
+    
+
+```go
+var i, j, k int                 // int, int, int
+var b, f, s = true, 2.3, "four" // bool, float64, string
+```
+
+1.  go program execution order: package load → main → functions
+    
+2.  `i, j = j, i`
+    
+3.  `:=` requires at least one var not declared on the left side
+    
+4.  cannot take address of a literal except struct; but field of a struct or element of array can be addressed
+    
+5.  there is `v++`but no `++v`; and it is a statement rather than an expression; can’t do `a = v++`
+    
+6.  `go package` is a module with status, like a Java class to some extent
+    
+7.  `new(int)` will return `*int`, pointing to value 0
+    
+8.  `new(struct{}) new([0]int)` will allocate `0` size memory, use caution; also returns pointer to `struct{}` or `[0]int`
+    
+9.  package level vars lifecycle is whole program lifecycle (singleton)
+    
+10.  `;` is inserted when compiled
+    
+11.  `go` has GC
+    
+12.  `go` can choose to allocate memory on heap / stack; in principle, func scope vars (not returned to outside with pointers) can live on stack, while others live on heap; the behavior is not decided by `var` or `new` unlike that of `c`
+    
+13.  `count[i] *= a` will save evaluation of `count[i]`; so count[i] will not be evaluated twice when do `count[i] = count[i] * a`
+    
+14.  `v, ok := m[key]` `v, ok := x.(T)` `v, ok := <-ch`
+    
+15.  `type degree int` different types are not compliant with each other
+    
+16.  `T(x)` type conversion, with pointers `(*int)(x)`; x and T has same base type (e.g different type that wraps int) or x can be assigned to var of T type
+    
+17.  `String()` method of a type would be used if proper, but may not be used
+    
+
+```go
+type Celsius float64
+
+func (c Celsius) String() string { return fmt.Sprintf("%g°C", c) }
+
+c := Celsius(212.0)
+fmt.Println(c.String()) // "100°C"
+fmt.Printf("%v\\n", c)   // "100°C"; no need to call String explicitly
+fmt.Printf("%s\\n", c)   // "100°C"
+fmt.Println(c)          // "100°C"
+fmt.Printf("%g\\n", c)   // "100"; does not call String, %g (%e(scientific notation) or %f (decimal) which ever more compact)
+```
+
+1.  `func init() { ... }` init function, can be included multiple times within any files to init status
+
+2.  `var a = func() { ... }()` is ok, like in js
+
+3.  you need to provide a host(url same as package name) for your go code before publish it to go registry ([proxy.golang.org](http://proxy.golang.org)); when you register your package using go list, a call will be made to you provided package url to verify its existence
+
+4.  dependency hell: p1 → p2 → p3(v1); p1 → p4 → p3(v2), then p3 == ?; golang solve this problem by treating same dependency with different major version number as different (but source code size will increase)
+
+5.  it is not allowed to define methods on a non-local type, e.g built-in type such as string, int64 etc
+
+6.  redefined types are a different type, e.g 
+```go
+type ByteCounter int
+var v *ByteCounter
+*v += ByteCounter(6) // need to convert int to ByteCounter
+
+```
+7.  a := new(Student) // equal to a := &Student{}
+
+8.  type assertion can be written as
+```go
+    var a interface{} = 1.1 // to use assertion, a needs to be an interface
+    v := a.(int) // this will panic if a is not int
+    b, ok := a.(int) // won't panic
+```
+
+9. make sure type A implements an interface
+```go
+    var _ io.Writer = (*A)(nil) // compile error if A lacks implementation of io.Writer
+```
+
+10. interface type values are partially comparable (depend on whether the dynamic value is comprable); while other types are either comprable(e.g basic ypes int etc) or non comprable (e.g slices, maps, functions); be aware of the potential panic when comparing non comparable interface values
+
+11. an interface type value holds a dynamic type and a dynamic value; when nil, both are nil; equal means both are equal (and comparable)
+
+12. equality of a type (value) would be used when used in "==", as map keys, or as switch cases
+
+13. fmt.Printf("%T", w) will print the dynamic type info 
+
+14. it is possible that an interface type value passes nil check but its dynamic value is nil(while dynamic type is non-nil)
+```go
+    var buf *bytes.Buffer // if we change this line to var buf io.Writer, we won't have the panic below
+    f(buf) // will panic b/c Write function of *bytes.Buffer doesn't allow nil receiver
+    
+    func f(out io.Writer) {
+        if out != nil {
+            out.Write([]bytes("done"))
+        }
+    }
+```
+
+15. sorting is available thru sort.Interface, which defines Len(), Less(i, j int), Swap(i, j int); and sort.Sort(v sort.Interface); and some convenient methods such as sort.Strings(s []string)
+
+16. if we need to change the interface of a value, just wrap it with another struct
+
+17. `fmt.Errorf() // returns a new formatted error`
+
+18. `errors.New(s string) // returns a new error which has dynamic type as a pointer to errorString struct; so that everytime it is invoked, a distinct value woule be returned, errors.New("EOF") != errors.New("EOF")`
+
+19. uintptr is an unsigned int large enough to hold any address, platform dependent
+
+20. array literal can have indexes
+```go
+var errors = [...]string{
+    1: "operation not permitted",
+    2: "no such file or directory",
+}
+```
+
+21. error is merely an interface
+```go
+    type error interface {
+        Error() string
+    }
+```
+
+22. type assertion is only used for interfaces, `x.(T) // checks dynamic type of x matches T` 
+
+23. type assertion returns dynamic value if T is a concrete type; returns a new interface of type T with same dynamic type/value if T is an interface type; aka if the assertion passes, the return value always have same type as T
+
+24. whether a var can be asserted as a certain interface depends only on the dynamic type, not the type; e.g if struct sdt satisfies Person/Student, we can assign sdt to a Person var and then assert it as a Student interface and vise versa, irrelevant of which interface is broader
+
+25. type assertion `x.(T)` will fail if x == nil
+
+26. type assertion could return one or two values
+
+27. `is.WriteString(w io.Writer, s string) // recommended way to write string into a writer b/c it is more efficient; io.Writer is an interface to write []byte`
+
+28. type assertion is used to decide whether we can use an interface in certain ways; package fmt use this technique to print different types, e.g error vs fmt.Stringer; error provides an Error() method while fmt.Stringer provides a String() method
+
+29. interface implementer should implement methods according to the interface's contract/expectations, e.g fmt.Stringer implementer should proivde their String() method to print out an eligible string for a value
+
+30. interface can be viewed as a union of types; type assertion is opposite, which descriminates the union
+
+31. type switch, an counterpart of normal switch statement
+```go
+    switch x.(type) {
+        case nil: // ...
+        case int, uint: // ...
+        default: // ...
+    }
+```
+
+32. `switch x := x.(type) {}`
+
+33. go uses CSP (communicating sequential processes thru goroutine and channel) rather than shared memory (other lang)
+
+34. backtick quoted string allow escaped chars in it, e.g `` `-\|/` ``
+
+35. `ch := make(chan int) // create a new int channel, ch has type of chan int, which is a pointer/reference`
+    
+36. reference types has nil as zeroed-value; as are pointers
+
+37. a channel has two principal operations: send/receive, known as communications collectively; both are written as '<-'; channel also supports a close operation
+
+38. `ch <- x` `x = <- ch` or `<- ch // received value is discarded`
+
+39. `close(ch)` after a channel is closed, subsequent send will panic; receive will consume remaining values before getting zeroed values
+
+40. `make(chan int) // unbuffered` `make(chan int, 0) // unbuffered` `make(chan int, 3) // buffered`
+
+41. unbuffered channel blocks sender/receiver until received/sent
+
+42. concurrent meaning we don't have any guarantee of the order of a few tasks
+
+43. rune is int32. for range looping a string would give rune value, each unicode code point is padded to 4 bytes
+
+44. utf8/16/32 are all unicode but with different encoding. 8 is better for when ascii chars prevail, but requires more bytes for higher order chars than 16
+
+45. <-chan chan<-; a chan can be assigned to <-chan or chan<-, but one can never get the original bi-directional chan back; only <- is used
+
+46. range can operate on a chan, e.g for v := range in 
+
+47. cap(ch) -> capacity; len(ch) -> current number of elements
+
+48. go routines are not garbage collected
+
+49. `for range rangeable` is valid
+
+50. sync.WaitGroup routine: wg.Add() wg.Done() main: wg.Wait()
+
+51. for range ch will wait on the channel
+
+52. struct{}{} is size 0, so could be used as channel signals
+
+53. counting semaphore, e.g allow 20 active routines
+
+54. select {case} will allow a routine to operate on a few channels which would block on one without it
+
+55. time.After() returns a chan which will receive an event after a certain time
+
+56. if several cases are active, select would randomly choose one
+
+57. select {} will block; while select {default} will not
+
+58. time.Tick() is more basic and can't be stopped (routine leak); time.NewTicker() has a stop method
+
+59. break label; continue label; goto label
+
+60. nil chan is allowed to read from, will effectively disable the entry in select
+
+61. it is traditional to use first letter of the type as the receiver var
+
+62. if a method is defined on T or *T, both t of type T and *T can be used as the receiver; compiler will do explicit conversions
+
+63. type composition will bring fields and methods to the new type struct, but it is not a derived struct from those
+
+64. when compiler looking at methods, first look at ones declared on the receiver; then ones promoted once from embedded fields; then ones promoted twice from embedded fields' embedded fields
+
+65. compiler errors out if ambiguous methods are promoted from a same rank
+
+66. serde stands for serializer & deserializer
+
+67. method values, m := r.method; method expression, m := R.method; R.method returns a method whose first param is the receiver
+
+68. many language limits the call stack size for functions, but go doesn't, so recursion could go almost infinitely
+
+69. nil slice can be used in append
+
+70. 
+
+* compile
+1. golang compiler won't include config files, e.g *.yaml into the binary, thus they have to be distributed separately
+2. golang does have the embed feature which allows config files to be shipped together with the binary, it might not be recommended, e.g change of config might not need a new build of the whole binary
+3. 
+

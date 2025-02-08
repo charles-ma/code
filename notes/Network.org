@@ -1,0 +1,8 @@
+#+STARTUP: overview
+#+TITLE: network
+#+AUTHOR: chao.ma
+
+* 网络是如何连接的
+1. ping is used to test if an IP address is available, uses ICMP/ARP protocol, directly on top of IP and doesn't need a prot. not tcp/udp
+2. ssh is using tcp
+3. 

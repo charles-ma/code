@@ -1,0 +1,246 @@
+#+STARTUP: overview
+#+TITLE: ML Notes
+#+AUTHOR: Charles Ma
+
+* Machine Learning Notes
+
+1.  https://www.comet.com/site/ ML Platform
+    
+2.  train set / test set / validation set (train dev set)
+    
+3.  splitting dataset (e.g 20% test set): requirements: a. random b. yield same split every time; implement: a. randomly select ids b. use id hash / checksum
+    
+4.  most important attributes(features) could be used to stratify the test set, e.g 52% female vs 48% male, the test set should be made with such a distribution as well
+    
+5.  Horovod is a distributed training framework for tensorflow / Keras / Pytorch
+    
+6.  one endpoint could have one model deployed (one deployment)
+    
+7.  dev velocity, train success rate, reliability (reduce resource usages, serving speed etc)
+    
+8.  data / feature lineage tracking
+    
+9.  slice and dice datasets
+    
+10.  data preparation: data cleaning; data transformation; feature scaling etc
+    
+11.  feature scaling → normalization (min-max): v - min / (max - min), all values normalized to [0, 1]; standardization, transform values into certain distribution, no value boundaries
+    
+12.  golden dataset: high quality dataset
+    
+13.  models can be dumped into files with certain formats, e.g pickle file, json etc
+    
+14.  cv / nlp model to do text transcription
+
+1.  AI is relevant to any intellectual task
+
+2.  ML is based on data; thus called learning and is a subfield of AI
+
+3.  variance is the amount of change in the hypothesis due to fluctuation in the training data; bias is the average diffs btw predicted value vs true value; if bias is big, model is under fitting; if variance is big, model is overfitting; fitting means the extend ths hypothesis is tied to the dataset
+
+4.  when two hypothesis imposes similar variance/bias, the simpler should be used; Ockham's razor
+
+5.  xgboost is based on gradient boost and is one of ensemble learning algo; random forest being another popular ensemble learning algo
+
+6.  ensemble learning is using multiple models instead of one model to do predictions
+
+7.  decision trees can perform regression & classification tasks
+
+8.  decition trees require very little data prep, e.g feature scaling & centering
+
+9.  gini score measures impurity of each decision tree node, the smaller(0) the better
+
+10. CART produces binary decision trees, while other aglo such as ID3 may produce trees with nodes that have more than two children
+
+11. max depth is needed for decision trees (how many layers the tree would have)
+
+12. white box models -> easy to interpret, e.g decision trees; black box models -> hard to explain, e.g neural networks, randome forest etc
+
+13. CART -> classification and regression tree; algo to train decision trees (grow trees); searching for a feature f and the threshold t that produces least errors/impurity (intuitively), impurity * instance count / total instance count; use this feature to devide the dataset, and recursively until maximum depth reached or it cannot find a split to reduce impurity
+
+14. CART is a greedy algo, which doesn't guarantee gloabl optimization
+
+15. CART can defaults to use gini impurity, but can use entropy as well, no significant differences btw those two
+
+16. regularize model -> preventing it from overfit, e.g for CART, specify max_depth; b/c CART is a free model, aka no restrictions on its degree of freedom, unlike that of linear model, number of params are predefined
+
+17. decision tree can be used for regression as well, instead of predicting a class, it will predict a value based on a certain feature each level
+
+18. categorical data -> columns that contain labels instead of numeric values, e.g red, green
+
+19. some categories may have a natual relationship to each other, e.g place -> first, second, third, etc; this type of categorical variables are called ordinal variables
+
+20. some aglo requires features to be numeric, so categorical values need to be converted
+
+21. integer encoding, e.g first -> 1, second -> 2, third -> 3 
+
+22. one hot encoding, 3 cols added to dataset representing red/yellow/green, each row would have 1 coloum valued at 1 and others at 0; use this encoding to eliminate the side effect (natural ordering) introduced by integer encoding
+
+23. randome forest is using multiple predictors and aggregate their predictions while boosting algo grow new trees trying to correct their predecessors
+
+24. log loss is -1 * log of likely hood function; likely hood function is to calculate the probability of an observed outcome based on the model being evaluated; e.g house selling prob, predicted (0.8, 0.4, 0.1) and observed is (1, 1, 0) (meaning first/second house sold, third not sold), likely hood is 0.8 * 0.4 * (1 - 0.1), ref https://www.kaggle.com/code/dansbecker/what-is-log-loss, for classification problems
+
+25. lower log loss is better for a model
+
+26. auc (area under curse) and pr(precision recall) auc is the bigger, the better for binary classifiers
+
+27. for classifiers, precision (tp / (fp + tp)) and recall (tp / (tp + fn)) has a tradeoff; precision indicates how if an instance is marked as positive, how likely it is so; recall indicates if an instance is positive, how likely it is marked so
+
+28. 
+
+
+
+* Regression
+1. ridge regression and Lasso regression, elastic net are all regularized linear regression, they added regularization term into the cost function to regularize coefficiency values
+2. polynomial regression can be transformed into a linear regression by adding polynomial terms as new features
+3. variance/over fit (errors on cross validation set is high, while on training set is low); bias/underfit (errors on both training/cross validation datasets are high); 
+4. elastic net's regularization term is a combination of that of ridge and lasso
+5. early stopping is to stop model training when it performs well on validation set (or you think it cannot do better on it); instead of stop on training set optima; early stopping can help reduce overfitting
+
+* classification
+1. skewed classes, positive/negative classes is a very big or small number; no. in both classes are highly inbalanced; classification accuracy is no longer a good measure of model performance, e.g model accuracy is 99% while only 0.5% of the cases are positive cases, a dumb classifier which always return negative would out perform the current model
+2. precision & recall can be used to measure skewed classes
+3. precision -> if predicted positive, it is positive; recall -> if it is positive, it should be predicted as positive
+4. 
+
+* LLM
+** materials
+1. video link https://www.youtube.com/playlist?list=PLoROMvodv4rOSH4v6133s9LFPRHjEmbmJ
+** notes
+*** intro and word vectors
+1. GPT capabilities: translate human lan to sql; conversation etc
+OPOP2. common NLP solution: e.g use a wordnet, a thesaurus containing lists of synonym sets and hypernyms ("is a" relationship)
+3. in traditional nlp, words are discrete symbols
+4. distributional semantics: a word's meaning is given by the words that frequently appear close-by
+5. statistical vs dl
+6. word vectors are also called word embeddings or (neural) work reprensentations; which is a distributed reprensentation, b/c the word meaning is distributed amongst all words used as dimensions; and each word can be represented a vector within a high dimensional space
+7. word2vec is a framework for learning word vectors
+8. gradient decent or similar methods are used to calculate word vectors
+9. once we have the word vectors, we can decide word similarities
+10. also arithmetic can be doen on word vectors as well, e.g king - man + woman = queen (vector arithmetic) - vector composition
+#+BEGIN_SRC python
+analogy('australia', 'beer', 'france') # output is 'champagne', calculated thru vector arithmetics
+#+END_SRC
+11. word2vec idea: 
+    a. start with random word vectors
+    b. iterate thru each word in the whole corpus
+    c. try to predict surrounding words using word vectors
+    d. update vectors so that they can predict surrounding words better (so called learningef*** word vectors, word senses, neural classifiers
+12. very common size of context vectors is 300
+13. word vector is per word type (e.g all "banking" tokens share the same "banking" type)
+14. vector represents the characteristics of a word, if two words have similar vector, they are similar, the dot product of their vectors are larger
+15. each word has two vectors, one for if it is a center word, one for context word
+16. the probability of a context word appearing in the context of a center word is calculated using the dot product of their vectors normalized(divided) by the sum of the dot products of all other words in the vocabulary with the center word respectively, the more similar one word is to the other, the larger the probability
+17. based on probability of each context word with center word, a likely hood of the whole corpus is calculated based on each chunk (a center word and its context words with predefined range, e.g 20 words), and the goal is to maximize this value
+18. soft max function
+19. gensim (python) is a package for word vector
+20. even if a word has multiple meanings, word vectors can also represent them well
+
+*** word vectors, word senses & neural network classifiers
+**** more word vectors
+1. the word2vec approach is called "bag of words" model, b/c it doesn't count the positional relationship btw words, e.g whether a context word appears before / after a center word etc
+2. prefer Stochastic gradient decent over plain gradient decent since the latter takes too much computing resource; SGD do gradient decent on smaller windows repeatedly rather than the whole corpus as whole
+3. gradient decent, each cycle make a small step towards where the gradient is negative; lamda is the learning rate, not step length
+4. word2vec is a model family, e.g skip-grams, continuous bag of words (cbow)
+5. co-occurence matrix can also be used to build word vectors, e.g window based co-occurence matrix keeps track of co-occurence count btw words; from which a co-occurence vector for a word can be derived
+6. efforts have to be made to reduce the dimentionality of the co-occurence vector (which grows with corpus size)
+7. co-occurence modol is easy to calculate since it is just counting, but model perf is not as good as skip-grams, cbow etc
+8. GloVe model tries to unify neural models with co-occurence matrix, it calculates the word vectors using co-occurence matrix 
+**** evaluation of word vectors
+1. intrinsic evaluation vs extrinsic evaluation
+2. intrinsic, e.g give the model loads of word vector analogies, e.g man -> king, women -> queen; there are some analogy datasets available; models are scored against those datasets
+3. another intrinsic, word vector distance btw words measured against human judgements, e.g tiger/cat -> 7.5 (human), compare to that generated by the model
+4. to make models better, one can increase the dimention of word vectors, 300 is the sweet spot; use better data etc
+5. extrinsic, e.g named entity recognition, such as identify reference to a person, location, organization etc
+6. word senses, words can have different meanings
+7. we could have different vectors for different meanings
+8. we can also use one vector, and that vector would be the composition of vectors of different senses of the same word
+**** named entity recognition
+1. general idea: to predict if a word indicates a location, have a fixed sized window with 0+-2 words (5 words in total), have their vectors concatenated, feed the vector into a layer of nn of logistics classifier, the clf will output a prob
+2. 
+   
+
+
+* Gradient decent
+1. gradient decent will converge with a good choice of learning rate
+2. batch / stochaistic / mini batch gradient decent
+3. typical mini batch size 2 ~ 100
+4. for stochaistic gradient decent, we might have to loop thru the entire dataset (pre randomized) several times, e.g 10
+5. if you have good vecotorization, mini batch might out perform stochaistic gd
+6. to choose good alpha, for gd, make sure for each iteration, the cost is going down; for stochaistic gd, makre sure for each iteration, the cost of last say 1,000 instaces are going down
+
+* online learning
+1. very similar to stochaistic gd, which takes in one instance for each step
+
+* Neural networks
+1. simple neural networks with linear feature mappings with signoid functions can be used to mimic logical ops, e.g and/or/xor, xor requires two hidden layers
+2. input layer (n nodes) -> hidden layer(s) -> output layer (one node)
+3. back propagation of errors can be used to calculate the partial derivatives of theta, so that optimization of the cost function can be done
+4. it is subtle to find bugs in nn, since a bug may only decrease model performance - gradient checking can help - check if gradient derived by back propagation is roughly the same as calculated by its definition, J(t + a) - J(t - a) / 2a
+5. gradient checking should be disabled in real training; otherwise your training will be super slow; since back prop is a much more efficient way of calculating (partial) derivatives
+6. initial value of theta cannot be all zeros (will endup with symmetric weights, where all the theta values are the same for each unit of the same layer)
+7. random initialization -> symmetric breaking
+8. randomly initializa weights -> forward prop to get h(theta) for any i -> compute cost function -> back prop to compute partial derivatives (those 3 steps can be done within loop of all the instances) -> gradient checking (optional) -> gradient decent or other advanced optimization to minimize J(theta)
+9. ml diagnostics can help find the next steps if a trained model performance is not idea
+10. use training/test dataset is one way to do diagnostic
+11. why validation dataset? b/c we have multiple models tained by training set -> select the one performs the best on the test set = fit the model using the test dataset -> we still want to see how the model generalizes, so we need validation dataset; and validation set instead will be used to do cross validation, test set is for generalization
+12. getting more training data will help with models of high variance
+13. smaller set of features will help with high variance / adding more features will help with high bias
+14. decreasing / increasing lamda fix high bias / variance
+15. large dataset can work well with high variance algos - llm
+
+* Support vector machine
+1. large margin classifier
+2. lmc is sensitive to outliers
+3. given x, we can calculate the similarities btw it and some known points, the function used to do similarity calculation is called kernel, e.g Gaussian kernel; and the similarities of x with a few known points can be used as features
+4. the few known points are called landmarks (kernels)
+5. svm goes well with kernels, in theory kernels can be used for other algo as well (but not very performant)
+6. 
+   
+   
+
+* unsupervised learning
+1. clustering is one of those; group data into coherent subsets
+2. k means:
+   input: number of clusters; training set {x1, x2, ... xn}
+   train: a. randomly initialize k cluster centroids, repeat clustering all samples into k clusters based on vicinity, recalculate centroids using average until centroids won't change
+3. objective(cost) function of clustering is distortion (sum of squared distance of each instance to its assigned cluster centroid)
+4. k-means, randomly select starting k centroids (and can do multiple rounds to find the gloabl optima hopefully)
+5. centroids normally are selected randomly from the training set instances
+6. choose the no. of clusters: normally by hand (thru analysis); elbow method: run k-mean with different k, find the one with decent distortion value, e.g the one in the elbow point(after which distortion wouldn't decrease much with more clusters/larger k, if elbow is clear)
+7. starting centroids will affect clustering result
+8. data compression is a motivation of dimentionality reduction, e.g data compression, 3d -> 2d, 2d -> 1d etc; e.g if there are two features, but they have a rough linear relationship with each other, we can reduce it to 1d
+9. another motivation if data visualization, it is easier to visualize smaller dimentional data
+10. most common way to do dimentional reduction -> principle component analysis (PCA)
+11. PCA will PROJECT n dimensional data onto k dimensional surface to minimize projection errors (different from linear regression which minimizes differences of y), k < n
+12. before PCA, do feature scaling and mean normalization
+13. mean normalization is a way to scale features, subtract mean value from values of a feature, and as a common practice, sometimes divide this value by the range as well. e.g (x - average) / (max(x) - min(x))
+14. k dimensional features can be remapped to n dimensional given the vectors (approx), intuitive on the chart; this is called reconstruction from compressed representation
+15. how to choose k for PCA: ((1/m) * sig(||x(i) - x(i)approx|| ^ 2)) / ((1/m) * sig(||x(i)|| ^ 2)) <= percent # (1 - percent) of variance is retained
+16. not good practice to use PCA to precent overfitting b/c PCA might throw away some valuable info; tho sometimes it proves to be working, better use regularization etc
+17. PCA usage: a. compress data, to use less mem/disk, to speed up training; b. to visualize high dimensional data
+
+* anomaly detection
+1. examples: fraud detection; manufacturing, e.g whether an aircraft engine is good; monitoring computers in a datacenter
+2. gaussian (normal) distribution
+3. algo: choose n features x; fit/calculate n pairs of params (mui, sigmai, aka n normal distributions, each for a dimension) where 1 <= i <= n; for new instances, calculate all n probabilities and times them to get an overall prob, if the result prod < a threshold, then there is one anomaly
+4. anomaly detection is unsupervised; while its evaluation could be similar to that of classifications
+5. when to use anomaly detection vs supervised learning (classifier): a. when positive examples are rare (it's difficult for supervised method to learn enough about those examples)
+6. how to choose features: gaussian features to use directly; no-gaussian features could be transfromed into gaussian ones by taking their log or other transformations, e.g x = x ^ 0.05; 
+7. histo gram -> distribution
+
+* recommender system
+1. content based recommendations: choose a few features for the movie, e.g romance, action etc; have a theta for each person who has rated a movie, theta is n dimensional, and n is equal to the no. of features chosen for the movie; calculate sum of linear regression cost functions of all the people; use gradient decent to find minimum
+2. b/c we assume we have features for the movies, so it is 'content based'
+3. collaborative filtering: instead of having features for a movie and then optimize on user theta; we assume user theta is given, and use an algo to learn about the movie features; then use an algo like theta -> x -> theta -> x ...; collaborative filtering the name comes from the fact that each user is rating some movies which help improve the whole system
+4. combining two objective functions, we can have a unified objective function which can be used to find theta/x at simultaneously
+5. from the learnt theta/x, we can tell if two movies are similar or two user has similar tastes
+6. to deal with no ratings, use mean normalization for the algo which will give missing ratings an average value
+7. 
+
+* map reduce
+1. whether the learning algo can be expressed as a summation over the training set
+
+* getting data
+1. artificial data synthesis, e.g various fonts + random background for photo OCR
+2. celling analysis: identify component of a pipeline for which you want to invest more; replace that component with a perfect one, to see if the system performance gains a lot

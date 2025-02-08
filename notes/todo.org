@@ -1,0 +1,8 @@
+#+TITLE: TODO LIST
+#+AUTHOR: Charles Ma
+#+STARTUP: overview
+
+* 2023-09-18
+** play with langchain
+
+
