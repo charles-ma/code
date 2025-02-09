@@ -10,5 +10,7 @@ Microarchitecture / Organization - implementation of the big A arch
 - examples: pipeline depth, # of pipelines, cache size, silicon area, peak power, execution ordering, bus width, ALU width etc
 
 
+Machine Model
+- where do operands come from and where do results go
 
 
