@@ -12,5 +12,9 @@ Microarchitecture / Organization - implementation of the big A arch
 
 Machine Model
 - where do operands come from and where do results go
+![alu](image/alu-register-memory.png)
+
+
+
 
 
